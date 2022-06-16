@@ -16,16 +16,32 @@ loop {
   
   case method
   when 'GET'
-    resp = File.read('./index.html')
-
-    headers = ["HTTP/1.1 200 OK",
+    if (path == '/script.js')
+      respjs = File.read('./script.js')
+      headersjs = ["HTTP/1.1 201 OK",
              "Server: Ruby",
-             "Content-Type: text/html; charset=utf-8",
-             "Blah: fdsjkfjdsklfjdsklfjdklsjf",
-             "Content-Length: #{resp.length}\r\n\r\n"].join("\r\n")
-  
-    client.puts(headers)
-    client.puts(resp)
+             "Content-Type: application/javascript; charset=utf-8",
+             "Sending: javascript",
+             "Content-Length: #{respjs.length}\r\n\r\n"].join("\r\n")
+      client.puts(headersjs)
+      client.puts(respjs)
+    else
+      resp = File.read('./index.html')
+
+      
+      
+      headers = ["HTTP/1.1 200 OK",
+                 "Server: Ruby",
+                 "Content-Type: text/html; charset=utf-8",
+                 "Sending: html",
+                 "Content-Length: #{resp.length}\r\n\r\n"].join("\r\n")
+
+
+      
+      client.puts(headers)
+      client.puts(resp)
+  end
+    
   when 'POST'
     reqHeaders = {}
     
