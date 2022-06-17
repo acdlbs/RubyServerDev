@@ -1,35 +1,44 @@
 require 'socket'
 
+
+#port we are listening on
 socket = TCPServer.new(4141)
 puts "Listening on port 4141"
 
 
 loop {
-  
+
+  #get our inital connection
   client = socket.accept
 
 
+  #grab verbage and path requested
   method, path = client.gets.split
   
   puts method
   puts path
-  
+
+  #swap based on verbage
   case method
   when 'GET'
+    #serve content based on path
     if (path == '/script.js')
+      #load file
       respjs = File.read('./script.js')
+      #grab header
       headersjs = ["HTTP/1.1 201 OK",
              "Server: Ruby",
              "Content-Type: application/javascript; charset=utf-8",
              "Sending: javascript",
              "Content-Length: #{respjs.length}\r\n\r\n"].join("\r\n")
+      #serve content
       client.puts(headersjs)
       client.puts(respjs)
     else
+      #load file
       resp = File.read('./index.html')
 
-      
-      
+      #grab headers
       headers = ["HTTP/1.1 200 OK",
                  "Server: Ruby",
                  "Content-Type: text/html; charset=utf-8",
@@ -37,14 +46,15 @@ loop {
                  "Content-Length: #{resp.length}\r\n\r\n"].join("\r\n")
 
 
-      
+      #send to client
       client.puts(headers)
       client.puts(resp)
   end
     
   when 'POST'
     reqHeaders = {}
-    
+
+    #parse request headers and data
     while line = client.gets.split(' ', 2)
       break if line[0] == ""
       reqHeaders[line[0].chop] = line[1].strip
@@ -54,24 +64,11 @@ loop {
     puts data
 
     respHeaders = ["HTTP/1.1 200 OK"]
-    
+
+    #print the headers
     client.puts(respHeaders)
   end
-  # while line = client.gets
-  #   puts line
-  # end
- 
-  
-  # resp = '{"desc":{"someKey":"someValue","anotherKey":"value"},"main_item":{"stats":{"a":8,"b":12,"c":10}}}'
 
-  # headers = ["HTTP/1.1 200 OK",
-  #            "Server: Ruby",
-  #            "Content-Type: text/html; charset=utf-8",
-  #            "Blah: fdsjkfjdsklfjdsklfjdklsjf",
-  #            "Content-Length: #{resp.length}\r\n\r\n"].join("\r\n")
-  
-  # client.puts(headers)
-  # client.puts(resp)
   client.close
 }
 
