@@ -1,12 +1,19 @@
 function submit() {
     var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) {
-            alert(xhr.response);
-        }
-    }
 
+    let message = document.getElementById("message").value;
+    
     xhr.open('POST', '/', true);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-    xhr.send('user=aiden');
+
+    let dataToSend = {
+	"firstName": "joe",
+	"lastName": "smith",
+	"data": message
+    };
+
+    console.log(dataToSend);
+    
+    xhr.send(JSON.stringify(dataToSend));
+    document.getElementById("message").value = "";
 }

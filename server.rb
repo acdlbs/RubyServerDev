@@ -1,5 +1,5 @@
 require 'socket'
-
+require 'json'
 
 #port we are listening on
 socket = TCPServer.new(4141)
@@ -50,6 +50,7 @@ loop {
       client.puts(headers)
       client.puts(resp)
   end
+
     
   when 'POST'
     reqHeaders = {}
@@ -59,6 +60,7 @@ loop {
       break if line[0] == ""
       reqHeaders[line[0].chop] = line[1].strip
     end
+    puts reqHeaders
     data = client.read(reqHeaders["Content-Length"].to_i)
     
     puts data
