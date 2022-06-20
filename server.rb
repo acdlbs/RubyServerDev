@@ -2,14 +2,14 @@ require 'socket'
 require 'json'
 
 #port we are listening on
-socket = TCPServer.new(4000)
-puts "Listening on port 4000"
+server = TCPServer.new(4141)
+puts "Listening on port 4141"
 
 
 loop {
 
   #get our inital connection
-  client = socket.accept
+  client = server.accept
 
 
   #grab verbage and path requested
@@ -59,8 +59,9 @@ loop {
     puts client.gets
 
     while  line = client.gets
-     break if line == "\r\n"
-     reqHeaders[line.split(": ")[0]] = line.split(": ")[1].strip
+      break if line == "\r\n"
+      splitLine = line.split(": ")
+      reqHeaders[splitLine[0]] = splitLine[1].strip
     end
 
     puts reqHeaders
