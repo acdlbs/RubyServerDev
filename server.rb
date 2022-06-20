@@ -2,8 +2,8 @@ require 'socket'
 require 'json'
 
 #port we are listening on
-socket = TCPServer.new(4141)
-puts "Listening on port 4141"
+socket = TCPServer.new(4000)
+puts "Listening on port 4000"
 
 
 loop {
@@ -56,14 +56,19 @@ loop {
     reqHeaders = {}
 
     #parse request headers and data
-    while line = client.gets.split(' ', 2)
-      break if line[0] == ""
-      reqHeaders[line[0].chop] = line[1].strip
+    puts client.gets
+
+    while  line = client.gets
+     break if line == "\r\n"
+     reqHeaders[line.split(": ")[0]] = line.split(": ")[1].strip
     end
+
     puts reqHeaders
+
     data = client.read(reqHeaders["Content-Length"].to_i)
-    
+
     puts data
+    #puts client.gets
 
     respHeaders = ["HTTP/1.1 200 OK"]
 
