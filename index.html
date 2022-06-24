@@ -1,17 +1,35 @@
-<h5>Type something</h5>
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="style.css">
+  </head>
 
-<h1>Username</h1>
-<input type="text" id="username" name="username"><br><br>
+  <body>
+    <div class="content">
+      <h5>Username</h5>
+      <input type="text" id="username" name="username">
+      <br><br>
+      <h2>Type something</h2>
+      <div class="chatBox">
+	<ul style="list-style-type:none;" id="msgList">
+	</ul>
+	<div>
+	  <input type="text" id="message" name="message">
+	  <input type="submit" value="Send" onclick="submit()">
+	</div>
+      </div>
 
-<h1>Message</h1>
-<input type="text" id="message" name="message"><br><br>
 
-<input type="submit" value="Send" onclick="submit()">
 
-<ul style="list-style-type:none;" id="msgList">
-  
-</ul>
 
-<script src="./script.js">
+      <!-- <h1>Message</h1> -->
+      <!-- <input type="text" id="message" name="message"><br><br> -->
 
-</script>
+
+
+      <script src="./script.js">
+
+      </script>
+    </div>
+  </body>
+</html>

@@ -6,14 +6,11 @@ require './cache.rb'
 server = TCPServer.new(4141)
 puts "Listening on port 4141"
 
- messages = FifoCache.new(10)
-# messages = Queue.new
+messages = FifoCache.new(10)
 
 loop {
-  #get our inital connection
-  #client = server.accept
+  #get our inital connection puts it on a thread
   Thread.start(server.accept) do |client|
-    #client = server.accept
     puts Thread.current
     #grab verbage and path requested
     method, path = client.gets.split
@@ -38,6 +35,19 @@ loop {
         client.puts(headersjs)
         client.puts(respjs)
 
+      elsif (path == '/style.css')
+        #load file
+        respcss = File.read('./style.css')
+        #grab header
+        headerscss = ["HTTP/1.1 201 OK",
+                      "Server: Ruby",
+                      "Content-Type: text/css; charset=utf-8",
+                      "Sending: css",
+                      "Content-Length: #{respcss.length}\r\n\r\n"].join("\r\n")
+        #serve content
+        client.puts(headerscss)
+        client.puts(respcss)
+        
       #return message data structure as json
       elsif (path == '/messages')
         resp = []
@@ -89,9 +99,6 @@ loop {
       puts reqHeaders
 
       data = client.read(reqHeaders["Content-Length"].to_i)
-
-      #puts data
-      #puts client.gets
 
       respHeaders = ["HTTP/1.1 200 OK"]
 

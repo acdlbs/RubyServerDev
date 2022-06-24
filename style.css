@@ -1,0 +1,52 @@
+body {
+    background: black;
+    display: grid;
+    justify-items: center;
+}
+
+h5 {    
+    margin-bottom: 10px;
+}
+
+.chatBox {
+    color: white;
+    background-color: #8c8c8c52;
+    padding: 10px;
+    margin-left: 25%;
+    margin-right: 25%;
+}
+
+.content {
+    color: white;
+    font: 1.3rem Inconsolata, monospace;
+    background-color: black;
+    background-image: radial-gradient(
+	rgba(0, 150, 0, 0.75), black 120%
+    );
+    text-shadow: 0 0 5px #C8C8C8;
+    height: 82vh;
+    width: 61vw;
+    display: grid;
+    align-items: center;
+    justify-items: center;
+    align-content: center;
+    border-radius: 40px;
+    box-shadow: 0 0 50px 50px #221717;
+    &::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background: repeating-linear-gradient(
+	    0deg,
+	    rgba(black, 0.15),
+	    rgba(black, 0.15) 1px,
+	    transparent 1px,
+	    transparent 2px
+	);
+    }
+}
+
+
