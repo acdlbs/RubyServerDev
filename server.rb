@@ -1,6 +1,6 @@
 require 'socket'
 require 'json'
-require './cache.rb'
+require 'cache.rb'
 
 #port we are listening on
 server = TCPServer.new(4141)
