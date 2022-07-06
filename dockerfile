@@ -1,5 +1,5 @@
 FROM ruby:3.0
 
-COPY . /app
+COPY /src /app
 
-RUN ruby /app/server.rb
+RUN cd ./app/src/ && ruby ./server.rb
