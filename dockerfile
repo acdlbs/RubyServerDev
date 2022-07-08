@@ -1,5 +1,7 @@
 FROM ruby:3.0
 
-COPY /src /app
+COPY src/ .
 
-RUN cd ./app/ && ruby ./server.rb
+EXPOSE 4141
+
+CMD ["ruby", "server.rb"]
