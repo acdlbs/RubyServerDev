@@ -1,0 +1,5 @@
+task default: %w[serve]
+
+task :serve do
+  ruby "server.rb"
+end
