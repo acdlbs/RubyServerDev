@@ -6,30 +6,15 @@
 
   <body>
     <div class="content">
-      <h5>Username</h5>
-      <input type="text" id="username" name="username">
-      <br><br>
-      <h2>Type something</h2>
-      <div class="chatBox">
-	<ul style="list-style-type:none;" id="msgList">
-	</ul>
-	<div>
-	  <input type="text" id="message" name="message">
-	  <input type="submit" value="Send" onclick="submit()">
-	</div>
+      <div class="user" id="user">
+	<h5>Username</h5>
+          <input type="text" id="username" name="username">
+          <input type="submit" value="Connect" onclick="connect()">
       </div>
-
-
-
-
-      <!-- <h1>Message</h1> -->
-      <!-- <input type="text" id="message" name="message"><br><br> -->
-
-
-
-      <script src="./script.js">
-
-      </script>
+      <br><br>
+      <div class="msgWindow" id="msgWindow">
+          <script src="./script.js">
+          </script>
     </div>
   </body>
 </html>

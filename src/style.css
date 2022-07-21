@@ -12,8 +12,8 @@ h5 {
     color: white;
     background-color: #8c8c8c52;
     padding: 10px;
-    margin-left: 25%;
-    margin-right: 25%;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .content {

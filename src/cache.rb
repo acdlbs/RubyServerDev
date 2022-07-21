@@ -1,7 +1,6 @@
 class FifoCache
   @@size
   
-  
   def initialize(size)
     @items = Array.new()
     @@size = size
@@ -34,10 +33,6 @@ class FifoCache
 
   def add_front(item)
     @items.push(item)
-  end
-
-  def add_rear(item)
-    @items.unshift(item)
   end
 
   def remove_front
