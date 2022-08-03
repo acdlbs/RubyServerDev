@@ -1,68 +1,60 @@
+
+class Client {
 // message list html list
-var msgWindow = document.getElementById("msgWindow");
-var username;
-var publicKey;
-var privateKey;
+#msgWindow = document.getElementById("msgWindow");
+#username;
+#publicKey;
+#privateKey;
+#loggedIn;
 // window.onerror = (message, source, lineno, colno, error) => {
     
 //     alert(message);
 //     window.location.replace("/");
 // }
-// when user connects with a username
+// when user connects with a this.#username
 
-function sendKeyData() {
-    username = document.getElementById("username").value;
-    generateKeyPair().then(keyPair => {
-	publicKey = keyPair.publicKey;
-	privateKey = keyPair.privateKey;
+    contructor() {
+	this.#loggedIn = false;
+    }
 
-	crypto.subtle.exportKey("jwk", publicKey).then((exportedKey) => {
 
-	    try{
-		sendUserInfo(username, exportedKey);
-	    } catch (e) {
-		console.log("butts");
-	    }
+    start() {
+	console.log("foo");
+	this.setReadyListener();
+	this.sendKeyData();
+    }
+    
+    sendKeyData() {
+	this.#loggedIn = false;
 
-	});
-    });
-}
+	this.#username = document.getElementById("username").value;
+	this.generateKeyPair().then(keyPair => {
+	    this.publicKey = keyPair.publicKey;
+	    this.#privateKey = keyPair.privateKey;
+
+	    crypto.subtle.exportKey("jwk", this.publicKey).then((exportedKey) => {
+
+
+		console.log("sendKeyData");
+		this.sendUserInfo(this.#username, exportedKey);
+		this.#loggedIn = true;
+
+
+		    
+
+
+	    });
+	});	
+    }
+
 						       
 
-function connect() {
-    
-    sendKeyData();
-    
-    addChatHTMLFeatures()
 
-    var msgList = document.getElementById("msgList");
-    // set interval to request new messages
-    const interval = setInterval(function() {
-	let data;
-	let xhr = new XMLHttpRequest();
-	xhr.onreadystatechange = getMessages();
-    }, 1000);
-    
-    // 	}).catch((err) => {
-    // 	    throw err;
-    // 	});
-    // }).catch((err) => {
-    // 	console.log("cheesenug");
-    // 	window.location.replace("/");
-    // 	return;
-    // });
-}
 
-function disconnect() {
-    let xhr = new XMLHttpRequest();
-    xhr.open("DELETE", username, true);
-    xhr.withCredential = true;
-    xhr.send(null);
-    window.location.replace("/");
-}
+
 
 //post message when submitting msg
-function submit() {
+ submit() {
     var xhr = new XMLHttpRequest();
     
     let message = document.getElementById("message").value;
@@ -71,7 +63,7 @@ function submit() {
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
 
     let dataToSend = {
-	username: username,
+	username: this.#username,
 	data: message
     };
     console.log(dataToSend);
@@ -81,7 +73,7 @@ function submit() {
     document.getElementById("message").value = "";
 }
 
-function getMessages() {
+ getMessages() {
     let data;
     let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
@@ -103,41 +95,87 @@ function getMessages() {
     xhr.send(null);
 }
 
-function addChatHTMLFeatures() {
-    let connectionWindowHtml = "<h2>Type something</h2><div class=\"chatBox\"><ul style=\"list-style-type:none;\" id=\"msgList\"></ul><div><input type=\"text\" id=\"message\" name=\"message\"><input type=\"submit\" value=\"Send\" onclick=\"submit()\"></div></div>";
+    addChatHTMLFeatures() {
+	console.log("cheeseman");
+    let connectionWindowHtml = "<h2>Type something</h2><div class=\"chatBox\"><ul style=\"list-style-type:none;\" id=\"msgList\"></ul><div><input type=\"text\" id=\"message\" name=\"message\"><input type=\"submit\" value=\"Send\" onclick=\"client.submit()\"></div></div>";
     // console.log(html);
     document.getElementById("user").innerHTML = "";
     var connectionWindow = document.createElement('div');
     connectionWindow.innerHTML = connectionWindowHtml;
-    msgWindow.appendChild(connectionWindow);
+    this.#msgWindow.appendChild(connectionWindow);
     var disconnectButton = document.createElement('div');
-    disconnectButton.innerHTML = "<input type=\"submit\" value=\"Disconnect\" onclick=\"disconnect()\">";
-    msgWindow.appendChild(disconnectButton);
+    disconnectButton.innerHTML = "<input type=\"submit\" value=\"Disconnect\" onclick=\"client.disconnect()\">";
+    this.#msgWindow.appendChild(disconnectButton);
 }
 
-function sendUserInfo(username, exportedPubKey) {
-    let xhr1 = new XMLHttpRequest();
-    try{
-	xhr1.onreadystatechange = ((f) => {
-	    if (this.readyState == 4 && this.status == 409) {
-		throw new Error("Username Taken");
-		return;
-	    }).catch((e) => {console.log("here");}))
-	}
-    }
-    catch (e) {
-	console.log("here");
-	throw e;
-    }
-    xhr1.open("POST", "/UserAdd?" + username, true);
-    xhr1.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-    xhr1.withCredential = true;
-    xhr1.send(JSON.stringify(exportedPubKey));
+ error() {
+    console.log("error is in error function");
+    window.location.replace("/");
+    
+}
+
+async  sendUserInfo(username, exportedPubKey) {
+    console.log("sendUserInfo");
+    var that = this;
+
+        let xhr = new XMLHttpRequest();
+	xhr.open("POST", "/UserAdd?" + that.#username, true);
+
+
+	xhr.onreadystatechange = function () {
+	    // In local files, status is 0 upon success
+	    if(xhr.readyState === XMLHttpRequest.DONE) {
+		const status = xhr.status;
+		if (status === 0 || (status >= 200 && status < 400)) {
+		    // The request has been completed successfully
+		    console.log(xhr.responseText);
+		    console.log("hey");
+		} else {
+		    // alert("blah");
+		    window.location.replace("/");
+		}
+	    }
+	};
+	
+    xhr.onerror = function () {
+	console.log("bad");
+            reject({
+                status: this.status,
+                statusText: xhr.statusText
+            });
+        };
+	xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+	xhr.withCredential = true;
+	xhr.send(JSON.stringify(exportedPubKey));
+
+    
+    // let xhr1 = new XMLHttpRequest();
+    
+    // xhr1.onreadystatechange = Function () {
+    // 	// In local files, status is 0 upon success
+    // 	if(xhr1.readyState === XMLHttpRequest.DONE) {
+    // 	    const status = xhr1.status;
+    // 	    if (status === 0 || (status >= 200 && status < 400)) {
+    // 		// The request has been completed successfully
+    // 		console.log(xhr1.responseText);
+    // 		console.log("hey");
+    // 		this.#loggedIn = true;
+    // 	    } else {
+    // 		// alert("blah");
+    // 		window.location.replace("/");
+    // 	    }
+    // 	}
+    // };
+    
+    // xhr1.open("POST", "/UserAdda?" + this.#username, true);
+    // xhr1.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+    // xhr1.withCredential = true;
+    // xhr1.send(JSON.stringify(exportedPubKey))
 }
 
 
 //encryption
-async function decryptMessage(key, cyphertext) {
+async  decryptMessage(key, cyphertext) {
     let decrypted = await window.crypto.subtle.decrypt(
 	{
 	    name: "RSA-OAEP"
@@ -149,7 +187,7 @@ async function decryptMessage(key, cyphertext) {
     );   
 }
 
-async function encryptMessage(key, encoded) {
+async  encryptMessage(key, encoded) {
     ciphertext = await window.crypto.subtle.encrypt(
 	{
 	    name: "RSA-OAEP"
@@ -161,17 +199,17 @@ async function encryptMessage(key, encoded) {
     return ciphertext;
 }
 
-function encodeMessage(message) {
+ encodeMessage(message) {
     let enc = new TextEncoder();
     return enc.encode(message);
 }
 
-function decodeMessage(message) {
+ decodeMessage(message) {
     let dec = new TextDecoder();
     return dec.decode(message);
 }
 
-async function generateKeyPair() {
+async  generateKeyPair() {
     return window.crypto.subtle.generateKey(
 	{
 	    name: "RSA-OAEP",
@@ -184,3 +222,55 @@ async function generateKeyPair() {
 	
     );
 }
+
+    setReadyListener() {
+	var that = this;
+	const readyListener = () => {
+	    console.log("readyListener");
+	    console.log(this.#loggedIn);
+	    if (this.#loggedIn) {
+		console.log("made it!");
+		this.addChatHTMLFeatures()
+
+		var msgList = document.getElementById("msgList");
+		// set interval to request new messages
+		const interval = setInterval(function() {
+		    let data;
+		    let xhr = new XMLHttpRequest();
+		    xhr.onreadystatechange = that.getMessages();
+		}, 1000);
+		return;
+		return alert("Ready!");
+	    }
+	    return setTimeout(readyListener, 250);
+	};
+	readyListener();
+    }
+
+    disconnect() {
+	let xhr = new XMLHttpRequest();
+	xhr.open("DELETE", this.#username, true);
+	xhr.withCredential = true;
+	xhr.send(null);
+	window.location.replace("/");
+    }
+};
+
+
+function connect() {
+    client = new Client();
+    client.start();
+    
+    
+    // 	}).catch((err) => {
+    // 	    throw err;
+    // 	});
+    // }).catch((err) => {
+    // 	console.log("cheesenug");
+    // 	window.location.replace("/");
+    // 	return;
+    // });
+}
+
+
+
