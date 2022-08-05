@@ -11,8 +11,12 @@ users = Hash.new()
 numUsers = 0
 
 loop {
-  puts numUsers
-  puts users
+  #puts numUsers
+  #puts users
+  #puts messages.size
+  # for i in 0..messages.size
+  #   #puts messages.get(i)
+  # end
   #get our inital connection puts it on a thread
   Thread.start(server.accept) do |client|
     headers = []
@@ -20,21 +24,21 @@ loop {
       headers << line
     end
 
-    puts headers
+    #puts headers
 
     # client.each_line do |line|
     #   puts line
     # end
 
-    puts Thread.current
+    #puts Thread.current
     #grab verbage and path requested
     method, path = headers[0].split
     host, id = headers[1].split
     
-    puts method
-    puts path
-    puts host
-    puts id
+    #puts method
+    #puts path
+    #puts host
+    #puts id
 
     #swap based on verbage
     case method
@@ -137,7 +141,7 @@ loop {
         #parse request headers and data
         #puts client.gets
         for line in headers
-          puts line
+          #puts line
           splitLine = line.split(": ")
           reqHeaders[splitLine[0]] = splitLine[1]
         end
@@ -149,7 +153,7 @@ loop {
         #   reqHeaders[splitLine[0]] = splitLine[1].strip
         # end
 
-        puts reqHeaders
+        #puts reqHeaders
 
         data = client.read(reqHeaders["Content-Length"].to_i)
 
@@ -159,10 +163,10 @@ loop {
         #print the headers
         client.puts(respHeaders)
         messages.add(JSON.parse(data))
-        puts messages
-        for i in 0..messages.size
-          puts messages.get(i)
-        end
+        #puts messages
+        # for i in 0..messages.size
+        #   #puts messages.get(i)
+        # end
 
       else
         if(path.match(/UserAdd/))
@@ -173,7 +177,7 @@ loop {
             #parse request headers and data
             #puts client.gets
             for line in headers
-              puts line
+              #puts line
               splitLine = line.split(": ")
               reqHeaders[splitLine[0]] = splitLine[1]
             end
@@ -193,7 +197,7 @@ loop {
       reqHeaders = {}
       
       for line in headers
-        puts line
+        #puts line
         splitLine = line.split(": ")
         reqHeaders[splitLine[0]] = splitLine[1]
       end

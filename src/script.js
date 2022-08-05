@@ -1,10 +1,11 @@
 
 var users = new Map;
+var username;
 
 class Client {
     // message list html list
     #msgWindow = document.getElementById("msgWindow");
-    #username;
+//    #username;
     #publicKey;
     privateKey;
     
@@ -23,7 +24,7 @@ class Client {
     sendKeyData() {
 	this.#loggedIn = false;
 
-	this.#username = document.getElementById("username").value;
+	username = document.getElementById("username").value;
 	this.generateKeyPair().then(keyPair => {
 	    this.#publicKey = keyPair.publicKey;
 	    this.privateKey = keyPair.privateKey;
@@ -32,7 +33,7 @@ class Client {
 
 
 		console.log("sendKeyData");
-		this.sendUserInfo(this.#username, exportedKey);
+		this.sendUserInfo(username, exportedKey);
 		this.#loggedIn = true;
 
 
@@ -50,7 +51,7 @@ class Client {
 	var xhr = new XMLHttpRequest();
 	
 	let message = document.getElementById("message").value;
-	console.log(message);
+	//console.log(message);
 
 	let encoded = this.encodeMessage(message);
 
@@ -58,28 +59,76 @@ class Client {
 
 	let encodedArray = new Uint8Array(encoded);
 
-	console.log(encodedArray);
+	//console.log(encodedArray);
 	
-	
-	this.encryptMessage(this.#publicKey, encodedArray).then((cypherText) => {
-	    console.log(cypherText);
-	    xhr.open('POST', '/message', true);
-	    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+	let sendingTo = new Array();
 
-	    let c = new Uint8Array(cypherText);
+	const names = [];
+	const promises = [];
+	
+
+	//console.log(users);
+	users.forEach((key, user) => {
+
+	    console.log(user);
 	    
-	    let dataToSend = {
-		username: this.#username,
-		message: c
-	    };
-	    console.log("hereere!!!");
-	    console.log(dataToSend);
-	    xhr.withCredentials = true;
-	    // xhr.send(JSON.stringify(dataToSend));
+	    
 
-	    xhr.send(JSON.stringify(dataToSend))
-	    document.getElementById("message").value = "";
+	    names.push(user);
+	    promises.push(this.encryptMessage(key, encodedArray));
+
+
+	    /*
+	      .then((cypherText) => {
+		//console.log(cypherText);
+		let c = new Uint8Array(cypherText);
+		
+		let dataToSend = {
+		    username: user,
+		    message: c
+		};
+
+		sendingTo.push(dataToSend);
+
+	    })
+	      */
 	});
+
+	Promise.all(promises)
+            .then((result) => {
+		for (let i = 0; i < result.length; i++) {
+		    let c = new Uint8Array(result[i]);
+		    
+		    let dataToSend = {
+			username: names[i],
+			from: username,
+			message: c
+		    };
+
+		    sendingTo.push(dataToSend);
+		}
+
+		console.log("here!!!");
+		console.log(sendingTo);
+		
+		xhr.open('POST', '/message', true);
+		xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+		
+		//console.log("hereere!!!");
+		//console.log(dataToSend);
+		xhr.withCredentials = true;
+		// xhr.send(JSON.stringify(dataToSend));
+
+		xhr.send(JSON.stringify(sendingTo))
+		document.getElementById("message").value = "";
+	    });
+
+
+    
+
+	
+	
+
 	/*
 	  async  encryptMessage(key, encoded) {
 	  ciphertext = await window.crypto.subtle.encrypt(
@@ -105,14 +154,14 @@ class Client {
 	xhr.onreadystatechange = function() {
 	    if (xhr.readyState == XMLHttpRequest.DONE) {
 		let data = JSON.parse(xhr.responseText);
-		console.log("FOO");
-		console.log(data);
+		//console.log("FOO");
+		//console.log(data);
 
 		data.forEach((currentValue, index, arr) => {
 		    let name = currentValue[0];
 		    let key = JSON.parse(currentValue[1]);
-		    console.log(name);
-		    console.log(key);
+		    //console.log(name);
+		    //console.log(key);
 		    window.crypto.subtle.importKey(
 			"jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
 			key,
@@ -126,14 +175,15 @@ class Client {
 		    )
 			.then(function(publicKey){
 			    //returns a publicKey (or privateKey if you are importing a private key)
-			    console.log(publicKey);
-			    users[name] = publicKey;
+			    //console.log(publicKey);
+			    users.set(name, publicKey);
+//			    console.log(name + "\n" + publicKey);
 			})
 			.catch(function(err){
 			    console.error(err);
 			});
 		    
-		    console.log(index);
+		    //console.log(index);
 
 		})
 		
@@ -162,11 +212,35 @@ class Client {
 
 
 
-		let chatHtml = "<div>";
+		//let chatHtml = "<div>";
+		let chatHtml = "";
 		for(let index in data){
-		    let c = data[index].message;
 
+		    if (data[index].length == 0) continue;
+		    console.log(data[index]);
 
+		    let b = data[index];
+		    
+		    //let c = data[index].message;
+
+//		    console.log(data[index][0].message);
+//		    data[1].filter(k => k.username == username)
+
+		    var c;
+		    var msgArray = data[index].filter(u => u.username == username);
+		    if (msgArray.length == 0){
+			continue;
+		    } else {
+			c = msgArray[0].message;
+		    }
+		   
+		    
+		    
+		    if (c == null) {
+			console.log(index);
+		    }
+		    
+		    
 		    let tmp = new Uint8Array(Object.keys(c).length);
 		    for(let i = 0; i < Object.keys(c).length; i++){
 			tmp[i] = c[i];
@@ -190,8 +264,8 @@ class Client {
 			let message = dec.decode(decrypted);
 
 
-			chatHtml += "<li>" + data[index].username + ": " + message + "</li>";
-			chatHtml += "</div>";
+			chatHtml += "<li>" + data[index].filter(u => u.username == username)[0].from + ": " + message + "</li>";
+			//chatHtml += "</div>";
 			// console.log(html);
 			msgList.innerHTML = chatHtml;
 
@@ -225,7 +299,7 @@ class Client {
 
     
     error() {
-	console.log("error is in error function");
+	//console.log("error is in error function");
 	window.location.replace("/");
 	
     }
@@ -234,7 +308,7 @@ class Client {
 	var that = this;
 
         let xhr = new XMLHttpRequest();
-	xhr.open("POST", "/UserAdd?" + that.#username, true);
+	xhr.open("POST", "/UserAdd?" + username, true);
 
 
 	xhr.onreadystatechange = function () {
@@ -243,7 +317,7 @@ class Client {
 		const status = xhr.status;
 		if (status === 0 || (status >= 200 && status < 400)) {
 		    // The request has been completed successfully
-		    console.log(xhr.responseText);
+		    //console.log(xhr.responseText);
 		} else {
 		    // alert("blah");
 		    window.location.replace("/");
@@ -338,7 +412,7 @@ class Client {
     setReadyListener() {
 	var that = this;
 	const readyListener = () => {
-	    console.log(this.#loggedIn);
+	    //console.log(this.#loggedIn);
 	    if (this.#loggedIn) {
 		this.addChatHTMLFeatures()
 
@@ -360,7 +434,7 @@ class Client {
 
     disconnect() {
 	let xhr = new XMLHttpRequest();
-	xhr.open("DELETE", this.#username, true);
+	xhr.open("DELETE", username, true);
 	xhr.withCredential = true;
 	xhr.send(null);
 	window.location.replace("/");
