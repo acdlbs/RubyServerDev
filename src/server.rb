@@ -67,6 +67,26 @@ loop {
         #serve content
         client.puts(headerscss)
         client.puts(respcss)
+
+
+      elsif (path == '/users')
+        resp = []
+        users.each {|user| resp.push(user)}
+        resp = resp.to_json
+        
+        
+        #grab headers'
+        headers = ["HTTP/1.1 200 OK",
+                   "Server: Ruby",
+                   "Content-Type:  json",
+                   "Access-Control-Allow-Credentials: true",
+                   "Sending: json",
+                   "Content-Length: #{resp.length}\r\n\r\n"].join("\r\n")
+
+
+        #send to client
+        client.puts(headers)
+        client.puts(resp)
         
       #return message data structure as json
       elsif (path == '/messages')
