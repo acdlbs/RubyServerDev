@@ -1,14 +1,14 @@
-
+//global vars
 var users = new Map;
 var username;
 
 class Client {
-    // message list html list
+
+    //class variables
     #msgWindow = document.getElementById("msgWindow");
-//    #username;
+    //#username;
     #publicKey;
     privateKey;
-    
     #loggedIn;
 
     contructor() {
@@ -20,26 +20,21 @@ class Client {
 	this.setReadyListener();
 	this.sendKeyData();
     }
-    
+
+    //give the server the users public key
     sendKeyData() {
 	this.#loggedIn = false;
 
 	username = document.getElementById("username").value;
-	this.generateKeyPair().then(keyPair => {
+	generateKeyPair().then(keyPair => {
 	    this.#publicKey = keyPair.publicKey;
 	    this.privateKey = keyPair.privateKey;
 
 	    crypto.subtle.exportKey("jwk", this.#publicKey).then((exportedKey) => {
 
-
 		console.log("sendKeyData");
 		this.sendUserInfo(username, exportedKey);
 		this.#loggedIn = true;
-
-
-		
-
-
 	    });
 	});	
     }
@@ -51,49 +46,31 @@ class Client {
 	var xhr = new XMLHttpRequest();
 	
 	let message = document.getElementById("message").value;
-	//console.log(message);
 
-	let encoded = this.encodeMessage(message);
+	let encoded = encodeMessage(message);
 
-	//console.log(JSON.stringify(console.log(new Uint8Array(encoded))));
-
+	//encode
 	let encodedArray = new Uint8Array(encoded);
-
-	//console.log(encodedArray);
 	
 	let sendingTo = new Array();
 
 	const names = [];
+
+	//promises collects all the promises of creating an encryped message
+	//we can call Promise.all(promises).then((result)=>{}) to run once all promises have returned
 	const promises = [];
 	
-
-	//console.log(users);
+	//for each of the users encrypt message with their pub key
 	users.forEach((key, user) => {
 
 	    console.log(user);
-	    
-	    
 
 	    names.push(user);
-	    promises.push(this.encryptMessage(key, encodedArray));
-
-
-	    /*
-	      .then((cypherText) => {
-		//console.log(cypherText);
-		let c = new Uint8Array(cypherText);
-		
-		let dataToSend = {
-		    username: user,
-		    message: c
-		};
-
-		sendingTo.push(dataToSend);
-
-	    })
-	      */
+	    
+	    promises.push(encryptMessage(key, encodedArray));
 	});
 
+	//when all promises finish send all the encrypted messages
 	Promise.all(promises)
             .then((result) => {
 		for (let i = 0; i < result.length; i++) {
@@ -107,98 +84,55 @@ class Client {
 
 		    sendingTo.push(dataToSend);
 		}
-
-		console.log("here!!!");
-		console.log(sendingTo);
 		
 		xhr.open('POST', '/message', true);
 		xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
 		
-		//console.log("hereere!!!");
-		//console.log(dataToSend);
 		xhr.withCredentials = true;
-		// xhr.send(JSON.stringify(dataToSend));
 
 		xhr.send(JSON.stringify(sendingTo))
+
+		//set the message form back to empty
 		document.getElementById("message").value = "";
 	    });
-
-
-    
-
-	
-	
-
-	/*
-	  async  encryptMessage(key, encoded) {
-	  ciphertext = await window.crypto.subtle.encrypt(
-	  {
-	  name: "RSA-OAEP"
-	  },
-	  key,
-	  encoded
-	  
-	  );
-	  return ciphertext;
-	  }
-
-	  encodeMessage(message) {
-	  let enc = new TextEncoder();
-	  return enc.encode(message);
-	  }
-	*/
-	
     }
+
+    //grab the users from the server
     getUsers() {
 	let xhr = new XMLHttpRequest();
 	xhr.onreadystatechange = function() {
 	    if (xhr.readyState == XMLHttpRequest.DONE) {
 		let data = JSON.parse(xhr.responseText);
-		//console.log("FOO");
-		//console.log(data);
 
+		//for each of the users map a name to a public key (stored in the users map)
 		data.forEach((currentValue, index, arr) => {
 		    let name = currentValue[0];
 		    let key = JSON.parse(currentValue[1]);
-		    //console.log(name);
-		    //console.log(key);
 		    window.crypto.subtle.importKey(
-			"jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
+			"jwk",
 			key,
 			{   //these are the algorithm options
 			    name: "RSA-OAEP",
-			    hash: {name: "SHA-256"}, //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
+			    hash: {name: "SHA-256"},
 			},
-			true, //whether the key is extractable (i.e. can be used in exportKey)
-			["encrypt"] //"encrypt" or "wrapKey" for public key import or
-			//"decrypt" or "unwrapKey" for private key imports
-		    )
-			.then(function(publicKey){
-			    //returns a publicKey (or privateKey if you are importing a private key)
-			    //console.log(publicKey);
+			true, 
+			["encrypt"]
+		    ).then(function(publicKey){
+			    //set the map
 			    users.set(name, publicKey);
-//			    console.log(name + "\n" + publicKey);
-			})
-			.catch(function(err){
+			}).catch(function(err){
 			    console.error(err);
 			});
-		    
-		    //console.log(index);
-
 		})
-		
-		// Client.decryptMessage(pKey, data[index].message).then((message) => {
-		
-		// })
 	    }
-	    // alert(JSON.stringify(xhr.responseText));
 	}
 	
 	xhr.open('GET', '/users', true);
 	xhr.withCredentials = true;
 	xhr.send(null);
     }
-    //here
+
+    //get the user messages from the server and insert the unencrypted messages as html
     getMessages() {
 	let data;
 	let pKey = this.privateKey;
@@ -207,43 +141,37 @@ class Client {
 	    if (xhr.readyState == XMLHttpRequest.DONE) {
 		data = JSON.parse(xhr.responseText);
 
-
 		const textEncoder = new TextEncoder();
-
-
 
 		//let chatHtml = "<div>";
 		let chatHtml = "";
 		for(let index in data){
 
+		    //if there is no message continue (this is a fix for a bug that appeared...
+		    //sometimes the first message sent when the server is started returns nothing...)
 		    if (data[index].length == 0) continue;
-		    console.log(data[index]);
 
-		    let b = data[index];
 		    
-		    //let c = data[index].message;
+		    let b = data[index];
 
-//		    console.log(data[index][0].message);
-//		    data[1].filter(k => k.username == username)
-
-		    var c;
+		    var message;
 		    var msgArray = data[index].filter(u => u.username == username);
 		    if (msgArray.length == 0){
 			continue;
 		    } else {
-			c = msgArray[0].message;
+			message = msgArray[0].message;
 		    }
 		   
 		    
 		    
-		    if (c == null) {
+		    if (message == null) {
 			console.log(index);
 		    }
 		    
 		    
-		    let tmp = new Uint8Array(Object.keys(c).length);
-		    for(let i = 0; i < Object.keys(c).length; i++){
-			tmp[i] = c[i];
+		    let encrypted = new Uint8Array(Object.keys(message).length);
+		    for(let i = 0; i < Object.keys(message).length; i++){
+			encrypted[i] = message[i];
 		    }
 
 
@@ -253,29 +181,23 @@ class Client {
 			    
 			},
 			pKey,
-			tmp
+			encrypted
 			
 		    ).then((decrypted) => {
-
-
-			//let message = this.decodeMessage(decrypted);
-
 			let dec = new TextDecoder();
 			let message = dec.decode(decrypted);
 
-
+			//collect the html
 			chatHtml += "<li>" + data[index].filter(u => u.username == username)[0].from + ": " + message + "</li>";
+			
 			//chatHtml += "</div>";
 			// console.log(html);
+			
+			//shove the html into index.html
 			msgList.innerHTML = chatHtml;
 
 		    })
-		    
-		    // Client.decryptMessage(pKey, data[index].message).then((message) => {
-		    
-		    // })
 		}
-		// alert(JSON.stringify(xhr.responseText));
 	    }
 	}
 	xhr.open('GET', '/messages', true);
@@ -283,10 +205,9 @@ class Client {
 	xhr.send(null);
     }
 
+    //once user is connected update the html with the chatbox and messages
     addChatHTMLFeatures() {
-
 	let connectionWindowHtml = "<h2>Type something</h2><div class=\"chatBox\"><ul style=\"list-style-type:none;\" id=\"msgList\"></ul><div><input type=\"text\" id=\"message\" name=\"message\"><input type=\"submit\" value=\"Send\" onclick=\"client.submit()\"></div></div>";
-	// console.log(html);
 	document.getElementById("user").innerHTML = "";
 	var connectionWindow = document.createElement('div');
 	connectionWindow.innerHTML = connectionWindowHtml;
@@ -296,20 +217,15 @@ class Client {
 	this.#msgWindow.appendChild(disconnectButton);
     }
 
-
-    
     error() {
-	//console.log("error is in error function");
 	window.location.replace("/");
-	
+	throw "User is already active";
     }
 
-    async  sendUserInfo(username, exportedPubKey) {
-	var that = this;
-
+    //send the current user and their public key to the server
+    async sendUserInfo(username, exportedPubKey) {
         let xhr = new XMLHttpRequest();
 	xhr.open("POST", "/UserAdd?" + username, true);
-
 
 	xhr.onreadystatechange = function () {
 	    // In local files, status is 0 upon success
@@ -319,7 +235,6 @@ class Client {
 		    // The request has been completed successfully
 		    //console.log(xhr.responseText);
 		} else {
-		    // alert("blah");
 		    window.location.replace("/");
 		}
 	    }
@@ -334,80 +249,8 @@ class Client {
 	xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
 	xhr.withCredential = true;
 	xhr.send(JSON.stringify(exportedPubKey));
-
-	
-	// let xhr1 = new XMLHttpRequest();
-	
-	// xhr1.onreadystatechange = Function () {
-	// 	// In local files, status is 0 upon success
-	// 	if(xhr1.readyState === XMLHttpRequest.DONE) {
-	// 	    const status = xhr1.status;
-	// 	    if (status === 0 || (status >= 200 && status < 400)) {
-	// 		// The request has been completed successfully
-	// 		console.log(xhr1.responseText);
-	// 		console.log("hey");
-	// 		this.#loggedIn = true;
-	// 	    } else {
-	// 		// alert("blah");
-	// 		window.location.replace("/");
-	// 	    }
-	// 	}
-	// };
-	
-	// xhr1.open("POST", "/UserAdda?" + this.#username, true);
-	// xhr1.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-	// xhr1.withCredential = true;
-	// xhr1.send(JSON.stringify(exportedPubKey))
     }
 
-
-    //encryption
-    async  decryptMessage(key, cyphertext) {
-	let decrypted = await window.crypto.subtle.decrypt(
-	    {
-		name: "RSA-OAEP"
-	        
-	    },
-	    key,
-	    ciphertext
-	    
-	);   
-    }
-
-    async  encryptMessage(key, encoded) {
-	return await window.crypto.subtle.encrypt(
-	    {
-		name: "RSA-OAEP"
-	    },
-	    key,
-	    encoded
-	    
-	);
-    }
-
-    encodeMessage(message) {
-	let enc = new TextEncoder();
-	return enc.encode(message);
-    }
-
-    decodeMessage(message) {
-	let dec = new TextDecoder();
-	return dec.decode(message);
-    }
-
-    async  generateKeyPair() {
-	return window.crypto.subtle.generateKey(
-	    {
-		name: "RSA-OAEP",
-		modulusLength: 2048,
-		publicExponent: new Uint8Array([1, 0, 1]),
-		hash: "SHA-256",
-	    },
-	    true,
-	    ["encrypt", "decrypt"]
-	    
-	);
-    }
 
     setReadyListener() {
 	var that = this;
@@ -441,21 +284,55 @@ class Client {
     }
 };
 
-
 function connect() {
     client = new Client();
     client.start();
-    
-    
-    // 	}).catch((err) => {
-    // 	    throw err;
-    // 	});
-    // }).catch((err) => {
-    // 	console.log("cheesenug");
-    // 	window.location.replace("/");
-    // 	return;
-    // });
 }
 
+//encryption
+async function decryptMessage(key, cyphertext) {
+    let decrypted = await window.crypto.subtle.decrypt(
+	{
+	    name: "RSA-OAEP"
+	    
+	},
+	key,
+	ciphertext
+	
+    );   
+}
 
+async function  encryptMessage(key, encoded) {
+    return await window.crypto.subtle.encrypt(
+	{
+	    name: "RSA-OAEP"
+	},
+	key,
+	encoded
+	
+    );
+}
 
+function encodeMessage(message) {
+    let enc = new TextEncoder();
+    return enc.encode(message);
+}
+
+function decodeMessage(message) {
+    let dec = new TextDecoder();
+    return dec.decode(message);
+}
+
+async function generateKeyPair() {
+    return window.crypto.subtle.generateKey(
+	{
+	    name: "RSA-OAEP",
+	    modulusLength: 2048,
+	    publicExponent: new Uint8Array([1, 0, 1]),
+	    hash: "SHA-256",
+	},
+	true,
+	["encrypt", "decrypt"]
+	
+    );
+}
