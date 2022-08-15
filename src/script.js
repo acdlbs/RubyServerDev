@@ -1,6 +1,12 @@
 //global vars
 var users = new Map;
 var username;
+var loggedIn = false; 
+
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 class Client {
 
@@ -9,10 +15,10 @@ class Client {
     //#username;
     #publicKey;
     privateKey;
-    #loggedIn;
+    //loggedIn;
 
     contructor() {
-	this.#loggedIn = false;
+	loggedIn = false;
     }
 
 
@@ -22,10 +28,11 @@ class Client {
     }
 
     //give the server the users public key
-    sendKeyData() {
-	this.#loggedIn = false;
+    async sendKeyData() {
+	loggedIn = false;
 
-	username = document.getElementById("username").value;
+	username = document.getElementById("message").value;
+	document.getElementById("message").value = "";
 	generateKeyPair().then(keyPair => {
 	    this.#publicKey = keyPair.publicKey;
 	    this.privateKey = keyPair.privateKey;
@@ -34,13 +41,17 @@ class Client {
 
 		console.log("sendKeyData");
 		this.sendUserInfo(username, exportedKey);
-		this.#loggedIn = true;
+		loggedIn = true;
+		animation2().then(() => {
+		    sleep(2000).then(()=>{
+			animation();
+		    });
+		})
+
 	    });
 	});	
     }
-
-
-
+    
     //post message when submitting msg
     submit() {
 	var xhr = new XMLHttpRequest();
@@ -152,10 +163,10 @@ class Client {
 		    if (data[index].length == 0) continue;
 
 		    
-		    let b = data[index];
+		    let msgArray = data[index];
 
 		    var message;
-		    var msgArray = data[index].filter(u => u.username == username);
+		    //var msgArray = data[index].filter(u => u.username == username);
 		    if (msgArray.length == 0){
 			continue;
 		    } else {
@@ -189,12 +200,12 @@ class Client {
 
 			//collect the html
 			chatHtml += "<li>" + data[index].filter(u => u.username == username)[0].from + ": " + message + "</li>";
-			
 			//chatHtml += "</div>";
 			// console.log(html);
 			
 			//shove the html into index.html
 			msgList.innerHTML = chatHtml;
+			//msgList.appendChild(chatHtmle)
 
 		    })
 		}
@@ -207,14 +218,16 @@ class Client {
 
     //once user is connected update the html with the chatbox and messages
     addChatHTMLFeatures() {
-	let connectionWindowHtml = "<h2>Type something</h2><div class=\"chatBox\"><ul style=\"list-style-type:none;\" id=\"msgList\"></ul><div><input type=\"text\" id=\"message\" name=\"message\"><input type=\"submit\" value=\"Send\" onclick=\"client.submit()\"></div></div>";
-	document.getElementById("user").innerHTML = "";
+	let connectionWindowHtml = "";
+	document.getElementById("message").innerHTML = "";
 	var connectionWindow = document.createElement('div');
 	connectionWindow.innerHTML = connectionWindowHtml;
 	this.#msgWindow.appendChild(connectionWindow);
-	var disconnectButton = document.createElement('div');
-	disconnectButton.innerHTML = "<input type=\"submit\" value=\"Disconnect\" onclick=\"client.disconnect()\">";
-	this.#msgWindow.appendChild(disconnectButton);
+	// var disconnectButton = document.createElement('div');
+	// disconnectButton.innerHTML = "<input type=\"submit\" value=\"Disconnect\" onclick=\"client.disconnect()\">";
+	// this.#msgWindow.appendChild(disconnectButton);
+	
+
     }
 
     error() {
@@ -255,8 +268,8 @@ class Client {
     setReadyListener() {
 	var that = this;
 	const readyListener = () => {
-	    //console.log(this.#loggedIn);
-	    if (this.#loggedIn) {
+	    //console.log(loggedIn);
+	    if (loggedIn) {
 		this.addChatHTMLFeatures()
 
 		var msgList = document.getElementById("msgList");
@@ -335,4 +348,92 @@ async function generateKeyPair() {
 	["encrypt", "decrypt"]
 	
     );
+}
+
+
+var input = document.getElementById('message');
+input.focus();
+input.select();
+input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+	input = document.getElementById("message").value;
+	if (input == "/disconnect") client.disconnect(); 
+	loggedIn ? client.submit() : connect();
+	//client.submit();
+    }
+	});
+
+
+
+async function animation() {
+
+    var data = [
+	{
+	    AboutDevTypeText: 
+	    "<span>Type /disconnect to disconnect</span>",
+	    cheese: 
+	    "<span>Welcome " + username + " </span>"
+	}
+    ];
+
+    return new Promise((resolve, reject) => {
+	var allElements = document.getElementsByClassName("typeing");
+	for (var j = 0; j < allElements.length; j++) {
+	    var currentElementId = allElements[j].id;
+	    var currentElementIdContent = data[0][currentElementId];
+	    var element = document.getElementById(currentElementId);
+	    var devTypeText = currentElementIdContent;
+
+	    // type code
+	    var i = 0, isTag, text;
+	    (function type() {
+		text = devTypeText.slice(0, ++i);
+		if (text === devTypeText) return;
+		element.innerHTML = text + `<span class='blinker'>&#32;</span>`;
+		var char = text.slice(-1);
+		if (char === "<") isTag = true;
+		if (char === ">") isTag = false;
+		if (isTag) return type();
+		setTimeout(type, 60);
+	    })();
+	}
+	resolve();
+    });
+}
+
+
+async function animation2() {
+
+    var data = [
+	{
+	    AboutDevTypeText: 
+	    "<span>Type /disconnect to disconnect</span>",
+	    cheese: 
+	    "<span>Welcome " + username + " </span>"
+	}
+    ];
+
+    return new Promise((resolve, reject) => {
+	var allElements = document.getElementsByClassName("cheese");
+	for (var j = 0; j < allElements.length; j++) {
+	    var currentElementId = allElements[j].id;
+	    var currentElementIdContent = data[0][currentElementId];
+	    var element = document.getElementById(currentElementId);
+	    var devTypeText = currentElementIdContent;
+
+	    // type code
+	    var i = 0, isTag, text;
+	    (function type() {
+		text = devTypeText.slice(0, ++i);
+		if (text === devTypeText) return;
+		element.innerHTML = text + `<span class='blinker'>&#32;</span>`;
+		var char = text.slice(-1);
+		if (char === "<") isTag = true;
+		if (char === ">") isTag = false;
+		if (isTag) return type();
+		setTimeout(type, 60);
+	    })();
+	}
+	resolve();
+    });
 }

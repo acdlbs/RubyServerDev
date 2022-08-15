@@ -1,20 +1,34 @@
 <!DOCTYPE html>
-<html>
-  <head>
+<head>
     <link rel="stylesheet" href="style.css">
-  </head>
-
-  <body>
-    <div class="content">
-      <div class="user" id="user">
-	<h5>Username</h5>
-          <input type="text" id="username" name="username">
-          <input type="submit" value="Connect" onclick="connect()">
-      </div>
-      <br><br>
-      <div class="msgWindow" id="msgWindow">
-          <script src="./script.js">
-          </script>
+</head>
+<div id="screen">
+    <div id="red">
     </div>
-  </body>
-</html>
+    <div id="yellow">
+    </div>
+    <div id="green">
+    </div>
+    <p class="font">Steyr III. [Revised Edition].</p>
+    <p class="font">The World Is At Your Fingertips.</p>
+    <p class="font">Version 3.3, Reloaded.</p>
+    <p class="font">2021 - 2022.</p>
+    <p class="font">CyberGhost@SteyrIII:# ./chatapplication</p>
+    <div class="css-typing font" id="loggedIn">
+    </div>
+
+    <span id="cheese" class="cheese font"></span><span class='blinker'>&#32;</span>
+    <br/>
+    <span id="AboutDevTypeText" class="typeing font"></span><span class='blinker'>&#32;</span>
+    <p class="box" id="msgWindow">
+      <p class="font" id="msgBox"><br /><p class="font" id="msgList"></p>
+	<div>
+	  <input class="font" type="text" id="message" name="message">
+	</div>
+      </p>
+    </p>
+
+    <script src="./script.js">
+    </script>
+</div>
+

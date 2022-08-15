@@ -22,6 +22,9 @@ loop {
     #grab verbage and path requested
     method, path = headers[0].split
     host, id = headers[1].split
+
+    #headers.each {|l| puts l}
+
     
     #puts method
     #puts path
@@ -86,8 +89,13 @@ loop {
         # client.each_line do |line|
         #   puts line
         # end
+        #puts headers
         resp = []
-        messages.data().each {|msg| resp.push(msg)}
+        messages.data().map {|msg| msg.select {|m| m["username"]==headers.filter {|msg| msg[..5] == "Cookie"}.first.chomp[11..]}}.filter {|a| !a.empty?}.map{|msg| resp.push(msg)}
+        #messages.get(1).select {|msg| resp.push(msg["username"] == headers.last.chomp[11..])}
+        #messages.data().each {|msg| resp.push(msg)}
+        #puts resp
+        #byebug
         resp = resp.to_json
         
         
