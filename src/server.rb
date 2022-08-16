@@ -1,7 +1,6 @@
 require 'socket'
 require 'json'
 require './cache.rb'
-require 'byebug'
 
 #port we are listening on
 server = TCPServer.new(4141)
