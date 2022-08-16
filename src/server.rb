@@ -1,6 +1,7 @@
 require 'socket'
 require 'json'
 require './cache.rb'
+require 'byebug'
 
 #port we are listening on
 server = TCPServer.new(4141)
@@ -79,7 +80,7 @@ loop {
                    "Sending: json",
                    "Content-Length: #{resp.length}\r\n\r\n"].join("\r\n")
 
-
+        
         #send to client
         client.puts(headers)
         client.puts(resp)
@@ -91,7 +92,7 @@ loop {
         # end
         #puts headers
         resp = []
-        messages.data().map {|msg| msg.select {|m| m["username"]==headers.filter {|msg| msg[..5] == "Cookie"}.first.chomp[11..]}}.filter {|a| !a.empty?}.map{|msg| resp.push(msg)}
+        messages.data().map {|msg| msg.select {|m| m["to"]==headers.filter {|msg| msg[..5] == "Cookie"}.first.chomp[11..]}}.filter {|a| !a.empty?}.map{|msg| resp.push(msg)}
         #messages.get(1).select {|msg| resp.push(msg["username"] == headers.last.chomp[11..])}
         #messages.data().each {|msg| resp.push(msg)}
         #puts resp

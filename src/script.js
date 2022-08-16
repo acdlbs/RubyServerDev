@@ -1,7 +1,8 @@
 //global vars
 var users = new Map;
 var username;
-var loggedIn = false; 
+var loggedIn = false;
+var messages = new Array;
 
 
 function sleep(ms) {
@@ -11,11 +12,8 @@ function sleep(ms) {
 class Client {
 
     //class variables
-    #msgWindow = document.getElementById("msgWindow");
-    //#username;
     #publicKey;
     privateKey;
-    //loggedIn;
 
     contructor() {
 	loggedIn = false;
@@ -42,11 +40,7 @@ class Client {
 		console.log("sendKeyData");
 		this.sendUserInfo(username, exportedKey);
 		loggedIn = true;
-		animation2().then(() => {
-		    sleep(2000).then(()=>{
-			animation();
-		    });
-		})
+		animation();
 
 	    });
 	});	
@@ -88,8 +82,9 @@ class Client {
 		    let c = new Uint8Array(result[i]);
 		    
 		    let dataToSend = {
-			username: names[i],
+			to: names[i],
 			from: username,
+			date: Date(),
 			message: c
 		    };
 
@@ -154,8 +149,9 @@ class Client {
 
 		const textEncoder = new TextEncoder();
 
-		//let chatHtml = "<div>";
 		let chatHtml = "";
+		var div;
+		
 		for(let index in data){
 
 		    //if there is no message continue (this is a fix for a bug that appeared...
@@ -166,14 +162,14 @@ class Client {
 		    let msgArray = data[index];
 
 		    var message;
-		    //var msgArray = data[index].filter(u => u.username == username);
+
 		    if (msgArray.length == 0){
 			continue;
 		    } else {
 			message = msgArray[0].message;
 		    }
-		   
-		    
+
+
 		    
 		    if (message == null) {
 			console.log(index);
@@ -198,17 +194,25 @@ class Client {
 			let dec = new TextDecoder();
 			let message = dec.decode(decrypted);
 
-			//collect the html
-			chatHtml += "<li>" + data[index].filter(u => u.username == username)[0].from + ": " + message + "</li>";
-			//chatHtml += "</div>";
-			// console.log(html);
 			
-			//shove the html into index.html
-			msgList.innerHTML = chatHtml;
-			//msgList.appendChild(chatHtmle)
+			let msg = {
+			    to: data[index][0].to,
+			    from: data[index][0].from,
+			    date: data[index][0].date,
+			    message: message
+			}
+			
+			let tmp = messages.filter((item) => {return _.isEqual(msg, item)});
+			
+			if (tmp.length == 0) {
+			    messages.push(msg);
+			    chatHtml = "<li>" + data[index].filter(u => u.to == username)[0].from + ": " + message + "</li>";
+			    $( "p.msgBox" ).append( chatHtml );
+			}
 
 		    })
 		}
+		
 	    }
 	}
 	xhr.open('GET', '/messages', true);
@@ -222,12 +226,6 @@ class Client {
 	document.getElementById("message").innerHTML = "";
 	var connectionWindow = document.createElement('div');
 	connectionWindow.innerHTML = connectionWindowHtml;
-	this.#msgWindow.appendChild(connectionWindow);
-	// var disconnectButton = document.createElement('div');
-	// disconnectButton.innerHTML = "<input type=\"submit\" value=\"Disconnect\" onclick=\"client.disconnect()\">";
-	// this.#msgWindow.appendChild(disconnectButton);
-	
-
     }
 
     error() {
@@ -361,23 +359,64 @@ input.addEventListener("keydown", function (e) {
 	loggedIn ? client.submit() : connect();
 	//client.submit();
     }
-	});
+});
 
 
 
 async function animation() {
 
+    document.getElementById("intro").innerHTML = "";
+
     var data = [
 	{
-	    AboutDevTypeText: 
-	    "<span>Type /disconnect to disconnect</span>",
-	    cheese: 
-	    "<span>Welcome " + username + " </span>"
+	    disconnect: 
+	    "<p class=\"font\">Type /disconnect to disconnect</p>",
+	    welcome: 
+	    "<p class=\"font\">Welcome " + username + " </p>",
+	    loading:
+	    "<p class=\"font\">Loading</p>",
+	    one:
+	    "<p class=\"font\">InfoChat</p>",
+	    two:
+	    "<p class=\"font\">Classic chat with end to end encryption</p>",
+	    three:
+	    "<p class=\"font\">Version 1.0</p>",
+	    four:
+	    "<p class=\"font\">2022</p>",
+	    five:
+	    "<p class=\"font\">root@21d120ecd1c0:/# ./InfoChat</p><br/>"
 	}
     ];
 
-    return new Promise((resolve, reject) => {
-	var allElements = document.getElementsByClassName("typeing");
+
+    terminalPrint("one", data, 30);
+    sleep(500).then(()=> {
+	terminalPrint("two", data, 30);
+	sleep(1500).then(()=> {
+	    terminalPrint("three", data, 30);
+	    sleep(500).then(()=> {
+		terminalPrint("four", data, 30);
+		sleep(500).then(()=> {
+		    terminalPrint("five", data, 30);
+			sleep(3000).then(()=>{
+			    terminalPrint("welcome", data, 60);
+			    sleep(1000).then(()=> {
+				terminalPrint("disconnect", data, 60);
+			    })
+			})
+		})
+	    })
+	})
+    })
+    
+    
+
+    
+	
+}
+
+function terminalPrint(HTMLclass, data, speed){
+    var allElements = document.getElementsByClassName(HTMLclass);
 	for (var j = 0; j < allElements.length; j++) {
 	    var currentElementId = allElements[j].id;
 	    var currentElementIdContent = data[0][currentElementId];
@@ -394,46 +433,6 @@ async function animation() {
 		if (char === "<") isTag = true;
 		if (char === ">") isTag = false;
 		if (isTag) return type();
-		setTimeout(type, 60);
+		setTimeout(type, speed);
 	    })();
-	}
-	resolve();
-    });
-}
-
-
-async function animation2() {
-
-    var data = [
-	{
-	    AboutDevTypeText: 
-	    "<span>Type /disconnect to disconnect</span>",
-	    cheese: 
-	    "<span>Welcome " + username + " </span>"
-	}
-    ];
-
-    return new Promise((resolve, reject) => {
-	var allElements = document.getElementsByClassName("cheese");
-	for (var j = 0; j < allElements.length; j++) {
-	    var currentElementId = allElements[j].id;
-	    var currentElementIdContent = data[0][currentElementId];
-	    var element = document.getElementById(currentElementId);
-	    var devTypeText = currentElementIdContent;
-
-	    // type code
-	    var i = 0, isTag, text;
-	    (function type() {
-		text = devTypeText.slice(0, ++i);
-		if (text === devTypeText) return;
-		element.innerHTML = text + `<span class='blinker'>&#32;</span>`;
-		var char = text.slice(-1);
-		if (char === "<") isTag = true;
-		if (char === ">") isTag = false;
-		if (isTag) return type();
-		setTimeout(type, 60);
-	    })();
-	}
-	resolve();
-    });
-}
+	}}

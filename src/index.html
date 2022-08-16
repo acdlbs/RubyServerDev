@@ -1,34 +1,36 @@
 <!DOCTYPE html>
 <head>
-    <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.10/lodash.min.js"></script>
 </head>
+<body class="image">
 <div id="screen">
-    <div id="red">
+    <div id="orange">
     </div>
-    <div id="yellow">
+    <div id="teal">
     </div>
-    <div id="green">
+    <div id="purple">
     </div>
-    <p class="font">Steyr III. [Revised Edition].</p>
-    <p class="font">The World Is At Your Fingertips.</p>
-    <p class="font">Version 3.3, Reloaded.</p>
-    <p class="font">2021 - 2022.</p>
-    <p class="font">CyberGhost@SteyrIII:# ./chatapplication</p>
+    <p id="intro" class="font intro">Who are you?</p>
+    <span id="one" class="one"></span>
+    <span id="two" class="two"></span>
+    <span id="three" class="three"></span>
+    <span id="four" class="four"></span>
+    <span id="five" class="five"></span>
+    <span id="loading" class="loading"></span>
     <div class="css-typing font" id="loggedIn">
     </div>
 
-    <span id="cheese" class="cheese font"></span><span class='blinker'>&#32;</span>
-    <br/>
-    <span id="AboutDevTypeText" class="typeing font"></span><span class='blinker'>&#32;</span>
-    <p class="box" id="msgWindow">
-      <p class="font" id="msgBox"><br /><p class="font" id="msgList"></p>
-	<div>
-	  <input class="font" type="text" id="message" name="message">
-	</div>
+    <span id="welcome" class="welcome"></span>
+    <span id="disconnect" class="disconnect"></span>
+    <p class="messages msgBox" id="msgBox"><br /><p class="messages" id="msgList"></p>
+        <input class="messages" type="text" id="message" name="message">
       </p>
     </p>
 
     <script src="./script.js">
     </script>
 </div>
+</body>
 
