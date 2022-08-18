@@ -1,4 +1,4 @@
-# RubyServerDev
+# RubyChatServer
 Minimalist chat server with end-to-end encryption.
 
 *** NOTE: This is meant as a learning experience, there are many security vulnerabilities in this project. It is not meant to be used for important messages. ***
