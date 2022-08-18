@@ -21,3 +21,4 @@ docker compose build
 docker compose run
 ```
 
+Navigate to http://localhost:4141/
